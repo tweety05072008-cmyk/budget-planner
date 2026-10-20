@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>女大一生財務規劃與記帳分析系統</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+    .slice-transition {
+      transition: stroke-width 0.25s ease, opacity 0.2s ease;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen py-8 px-4 sm:px-6">
+
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- 標題與金流總覽 -->
+    <header class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-5">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200">
+            🌸 女大一生專屬 · 個人財務模型
+          </span>
+          <h1 class="text-2xl font-bold mt-2 text-slate-900">每月收支分配與互動預算表</h1>
+          <p class="text-sm text-slate-500 mt-1">打工收入 $14,000 ＋ 家裡生活費 $15,000 ＝ 每月進帳 $29,000</p>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2 text-right">
+          <span class="text-xs text-emerald-700 block font-medium">每月資產累積率 (ETF+備用)</span>
+          <span class="text-xl font-bold text-emerald-600">26.7% ($4,000/月)</span>
+        </div>
+      </div>
+
+      <!-- 三大關鍵資金池 -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-5">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+          <div class="text-xs text-slate-500 flex justify-between font-medium">
+            <span>每月總現金流入</span>
+            <span class="text-blue-600 font-bold">100%</span>
+          </div>
+          <div class="text-2xl font-bold text-slate-900 mt-1">$29,000</div>
+          <div class="text-xs text-slate-500 mt-1">打工 $14k + 生活費 $15k</div>
+        </div>
+
+        <div class="bg-rose-50/60 border border-rose-200 rounded-xl p-4">
+          <div class="text-xs text-rose-600 flex justify-between font-medium">
+            <span>固定房租 (不可省)</span>
+            <span class="text-rose-600 font-bold">48.3%</span>
+          </div>
+          <div class="text-2xl font-bold text-rose-600 mt-1">$14,000</div>
+          <div class="text-xs text-rose-500 mt-1">佔比接近一半，其他開銷需精算</div>
+        </div>
+
+        <div class="bg-rose-50/80 border border-rose-200 rounded-xl p-4">
+          <div class="text-xs text-rose-700 flex justify-between font-medium">
+            <span>每月自由可支配餘額</span>
+            <span class="text-rose-700 font-bold">51.7%</span>
+          </div>
+          <div class="text-2xl font-bold text-rose-700 mt-1">$15,000</div>
+          <div class="text-xs text-rose-600 mt-1">已納入 $2,000 治裝美妝預算</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 核心互動區：環形圖 + 按鈕清單 + 點擊展開詳情 -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- 左側：環形圖與所有類別清單 (7 欄) -->
+      <div class="lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-slate-800 text-lg">可支配預算分配環形圖 ($15,000)</h2>
+          <span class="text-xs text-slate-500">點擊任意項目查看細項</span>
+        </div>
+
+        <!-- SVG 環形圖 -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-6 py-2">
+          <div class="relative w-48 h-48 flex-shrink-0">
+            <svg id="donutChart" viewBox="0 0 100 100" class="w-full h-full -rotate-90 transform cursor-pointer">
+              <!-- JS 動態生成圓環切片 -->
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+              <span id="centerCategoryName" class="text-xs text-slate-500 font-medium">治裝美妝</span>
+              <span id="centerCategoryAmount" class="text-xl font-bold text-slate-900">$2,000</span>
+              <span id="centerCategoryPct" class="text-xs font-semibold text-rose-500">佔 13.3%</span>
+            </div>
+          </div>
+
+          <!-- 圓餅圖顏色快覽 -->
+          <div class="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs text-slate-600">
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>吃飯 $8,000 (53.3%)</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>治裝美妝 $2,000 (13.3%)</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>定期定額 $2,000 (13.3%)</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block"></span>緊急備用 $2,000 (13.3%)</div>
+            <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span>玩樂社交 $1,000 (6.7%)</div>
+          </div>
+        </div>
+
+        <!-- 分類卡片點擊按鈕列表 -->
+        <div class="space-y-2.5 pt-3 border-t border-slate-100" id="categoryButtonsContainer">
+          <!-- JS 動態渲染類別按鈕 -->
+        </div>
+      </div>
+
+      <!-- 右側：點選類別的詳細拆解表 (5 欄) -->
+      <div class="lg:col-span-5 flex flex-col gap-5">
+
+        <!-- 詳細明細卡片 -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex-1 flex flex-col">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <span id="detailIcon" class="text-3xl p-2 rounded-xl bg-slate-100">👗</span>
+              <div>
+                <h3 id="detailTitle" class="font-bold text-lg text-slate-900">治裝與美妝保養</h3>
+                <span id="detailSubtitle" class="text-xs text-slate-500">穿搭自信與日常保養</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <div id="detailAmount" class="text-2xl font-bold text-rose-500">$2,000</div>
+              <span id="detailRatio" class="text-xs text-slate-500">佔可支配 13.3%</span>
+            </div>
+          </div>
+
+          <!-- 子項目拆解清單 -->
+          <div class="mt-5 flex-1">
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">細部金額規劃拆解</h4>
+            <div id="subitemsList" class="space-y-2.5 text-xs">
+              <!-- 由 JS 填充子項目 -->
+            </div>
+          </div>
+
+          <!-- 女大生專屬實用 Advice -->
+          <div class="mt-5 p-4 bg-rose-50 border border-rose-200 rounded-xl">
+            <div class="flex items-start gap-2.5">
+              <span class="text-rose-600 text-base">💄</span>
+              <div>
+                <h5 class="text-xs font-bold text-rose-900">女大生精緻省錢 Tips</h5>
+                <p id="detailTip" class="text-xs text-rose-800 mt-1.5 leading-relaxed">
+                  將預算提昇到 $2,000，可滿足日常開架保養與換季穿搭！善用膠囊衣櫥思維，多買百搭素色單品。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 財務安全指標檢查 -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+          <h4 class="text-xs font-bold text-slate-800 flex items-center gap-1.5 uppercase tracking-wider">
+            <span>🛡️</span> 關鍵財務指標健檢
+          </h4>
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span class="text-slate-600">緊急資金留存（要求至少 $2,000）</span>
+              <span class="font-bold text-emerald-600 bg-emerald-100/70 px-2 py-0.5 rounded">
+                ✓ 嚴格達標 ($2,000)
+              </span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span class="text-slate-600">房租負擔率 (房租 ÷ 總收入)</span>
+              <span class="font-bold text-amber-600 bg-amber-100/70 px-2 py-0.5 rounded">
+                48.3% (偏高警戒)
+              </span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <span class="text-slate-600">大學 4 年預期累積本金 (ETF+備用)</span>
+              <span class="font-bold text-blue-600">約 $19.2 萬元</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- 底部行動建議 -->
+    <footer class="bg-white border border-slate-200 rounded-2xl p-5 text-slate-500 text-xs leading-relaxed space-y-2 shadow-sm">
+      <div class="font-semibold text-slate-700 text-sm">📌 女大一生專屬金流執行原則：</div>
+      <ul class="list-disc list-inside space-y-1">
+        <li><strong>治裝專款專用：</strong> 治裝美妝提升至 $2,000 後，可開立單獨的子帳戶或電子錢包。換季前先存兩至三個月（可達 $4,000~$6,000）再集中在特賣會採購，避免零星衝動購物。</li>
+        <li><strong>先分流再花費：</strong> 每月 5 號拿到打工費與生活費，立刻將 $14,000 轉入房租專戶、$2,000 扣款 ETF、$2,000 轉入數位活存備用金。</li>
+        <li><strong>定期定額不停扣：</strong> 投資 006208 或 0050 等市值型 ETF，畢業時有一筆近十萬的底氣資產！</li>
+      </ul>
+    </footer>
+
+  </div>
+
+  <script>
+    // 預算配置模型（已移除生活用品，治裝美妝升級為 $2,000）
+    const budgetData = [
+      {
+        id: 'food',
+        name: '吃飯',
+        icon: '🍱',
+        amount: 8000,
+        color: '#f59e0b',
+        hoverColor: '#d97706',
+        subtitle: '每日活力來源 · 日均約 $266',
+        subitems: [
+          { name: '平日早餐 (22天 × $45)', amount: '$990', note: '吐司、蛋餅配無糖豆漿' },
+          { name: '平日午餐 (22天 × $110)', amount: '$2,420', note: '學餐自助餐、健康水煮便當' },
+          { name: '平日晚餐 (22天 × $120)', amount: '$2,640', note: '便當、麵食或與室友外食' },
+          { name: '週末餐費 (8天 × $200)', amount: '$1,600', note: '週末早午餐或聚餐' },
+          { name: '水果與低糖飲品微額度', amount: '$350', note: '維持手搖每週不超過 1-2 杯' }
+        ],
+        tip: '日均 $266 在大學非常夠用，但極容易被宵夜、外送運費與手搖飲侵蝕！建議手搖杯換自備環保杯裝水，省錢又維持健康好體態。'
+      },
+      {
+        id: 'clothing',
+        name: '治裝與美妝保養',
+        icon: '👗',
+        amount: 2000,
+        color: '#f43f5e',
+        hoverColor: '#e11d48',
+        subtitle: '穿搭自信、開架彩妝與護髮打理',
+        subitems: [
+          { name: '穿搭衣物基金', amount: '$1,000', note: 'GU、蝦皮、日韓系百搭單品或換季外套' },
+          { name: '基礎美妝保養與防曬', amount: '$500', note: '化妝水、卸妝水、防曬乳、開架眉筆口紅' },
+          { name: '美髮造型/修容護理', amount: '$500', note: '修剪瀏海、護髮，或累積半年一次染燙基金' }
+        ],
+        tip: '每個月固定存 $2,000，兩三個月就有 $4,000~$6,000！強烈建議建立「膠囊衣櫥」觀念，挑選剪裁好、耐看的經典基本款，搭配飾品就能穿出高級感，避免快時尚買回一堆只穿一次的雷衣。'
+      },
+      {
+        id: 'etf',
+        name: '定期定額 ETF',
+        icon: '📈',
+        amount: 2000,
+        color: '#10b981',
+        hoverColor: '#059669',
+        subtitle: '時間複利引擎 · 提早 4 年起步',
+        subitems: [
+          { name: '市值型 ETF (006208 / 0050)', amount: '$2,000', note: '每月發薪日隔天自動扣款' },
+          { name: '券商定期定額手續費', amount: '$1', note: '各大券商皆有 1 元手續費優惠' },
+          { name: '大學四年累計投入本金', amount: '$96,000', note: '以年化 7% 估計，畢業約有近 11~12 萬' }
+        ],
+        tip: '大一生買 ETF 最重要的不是今天賺 5% 還是跌 3%，而是「習慣市場波動、堅持不停扣」。不要花時間看短線當沖，大一安心念書即可！'
+      },
+      {
+        id: 'emergency',
+        name: '緊急備用金',
+        icon: '🛡️',
+        amount: 2000,
+        color: '#3b82f6',
+        hoverColor: '#2563eb',
+        subtitle: '滿足底線！突發意外安全氣囊',
+        subitems: [
+          { name: '高利數位帳戶 (Richart/大戶/LINE Bank)', amount: '$2,000', note: '賺取 2%~3% 活存年息' },
+          { name: '存滿半年累積目標', amount: '$12,000', note: '足夠應付機車維修、生病、換手機' },
+          { name: '存滿一年累積目標', amount: '$24,000', note: '近兩個月房租保障水位' }
+        ],
+        tip: '這筆錢必須「專款專用」，存在沒有綁定行動支付（LINE Pay、Apple Pay）的數位帳戶裡。只有在車壞、筆電掛掉或身體不適時才可動用！'
+      },
+      {
+        id: 'fun',
+        name: '玩樂社交',
+        icon: '🎮',
+        amount: 1000,
+        color: '#a855f7',
+        hoverColor: '#9333ea',
+        subtitle: '社團聚餐、姊妹淘下午茶聚會',
+        subitems: [
+          { name: '姊妹淘聚餐 / 下午茶', amount: '$500', note: '每月 1 次平價網美咖啡廳或聚餐' },
+          { name: '週末休閒 (電影/文創市集/出遊)', amount: '$500', note: '善用學生證優惠折扣' }
+        ],
+        tip: '大學人際關係很珍貴，不用完全當苦行僧。把預算嚴格卡在 $1,000 內，額度用完時，主動提議在學校草地野餐或校園散步，朋友情誼依然不打折。'
+      }
+    ];
+
+    const totalAllocatable = 15000;
+    let selectedId = 'clothing'; // 預設突顯治裝美妝
+
+    // 繪製 SVG 環形圓餅圖
+    function renderDonut() {
+      const svg = document.getElementById('donutChart');
+      svg.innerHTML = '';
+      
+      let cumulativeAngle = 0;
+      const radius = 38;
+      const center = 50;
+      const strokeWidth = 14;
+      const circumference = 2 * Math.PI * radius;
+
+      budgetData.forEach(item => {
+        const percentage = item.amount / totalAllocatable;
+        const strokeDasharray = `${percentage * circumference} ${circumference}`;
+        const strokeDashoffset = -cumulativeAngle * circumference;
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', center);
+        circle.setAttribute('cy', center);
+        circle.setAttribute('r', radius);
+        circle.setAttribute('fill', 'transparent');
+        circle.setAttribute('stroke', item.color);
+        circle.setAttribute('stroke-width', strokeWidth);
+        circle.setAttribute('stroke-dasharray', strokeDasharray);
+        circle.setAttribute('stroke-dashoffset', strokeDashoffset);
+        circle.setAttribute('class', 'slice-transition');
+        circle.style.cursor = 'pointer';
+
+        if (item.id === selectedId) {
+          circle.setAttribute('stroke-width', strokeWidth + 4);
+          circle.setAttribute('stroke', item.hoverColor);
+        }
+
+        circle.addEventListener('click', () => {
+          selectCategory(item.id);
+        });
+
+        svg.appendChild(circle);
+        cumulativeAngle += percentage;
+      });
+    }
+
+    // 渲染分類按鈕
+    function renderCategoryButtons() {
+      const container = document.getElementById('categoryButtonsContainer');
+      container.innerHTML = '';
+
+      budgetData.forEach(item => {
+        const isSelected = item.id === selectedId;
+        const pctOfAllocatable = ((item.amount / totalAllocatable) * 100).toFixed(1);
+        const pctOfTotal = ((item.amount / 29000) * 100).toFixed(1);
+
+        const btn = document.createElement('button');
+        btn.className = `w-full text-left p-3.5 rounded-xl border transition-all flex items-center justify-between ${
+          isSelected 
+            ? 'border-rose-500 bg-rose-50/80 shadow-sm ring-1 ring-rose-400' 
+            : 'border-slate-200 hover:bg-slate-50 bg-white'
+        }`;
+
+        btn.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="text-xl p-2 rounded-lg" style="background-color: ${item.color}1a;">${item.icon}</span>
+            <div>
+              <div class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                ${item.name}
+                ${isSelected ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-600 text-white font-medium">查看中</span>' : ''}
+              </div>
+              <div class="text-xs text-slate-500">佔可支配 ${pctOfAllocatable}% · 總收 ${pctOfTotal}%</div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-sm" style="color: ${item.color};">$${item.amount.toLocaleString()}</div>
+            <div class="text-[11px] text-slate-400">點擊看明細 ➔</div>
+          </div>
+        `;
+
+        btn.addEventListener('click', () => {
+          selectCategory(item.id);
+        });
+
+        container.appendChild(btn);
+      });
+    }
+
+    // 更新右側細部明細
+    function updateDetail(item) {
+      document.getElementById('detailIcon').textContent = item.icon;
+      document.getElementById('detailTitle').textContent = item.name;
+      document.getElementById('detailSubtitle').textContent = item.subtitle;
+      document.getElementById('detailAmount').textContent = `$${item.amount.toLocaleString()}`;
+      document.getElementById('detailAmount').style.color = item.color;
+      
+      const pct = ((item.amount / totalAllocatable) * 100).toFixed(1);
+      const totalPct = ((item.amount / 29000) * 100).toFixed(1);
+      document.getElementById('detailRatio').textContent = `佔可支配 ${pct}% · 佔總收入 ${totalPct}%`;
+      document.getElementById('detailTip').textContent = item.tip;
+
+      // 更新圓餅圖中心文字
+      document.getElementById('centerCategoryName').textContent = item.name;
+      document.getElementById('centerCategoryAmount').textContent = `$${item.amount.toLocaleString()}`;
+      document.getElementById('centerCategoryPct').textContent = `佔 ${pct}%`;
+      document.getElementById('centerCategoryPct').style.color = item.color;
+
+      // 渲染子項目清單
+      const subList = document.getElementById('subitemsList');
+      subList.innerHTML = '';
+      item.subitems.forEach(sub => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:bg-slate-100/70 transition-colors';
+        row.innerHTML = `
+          <div>
+            <div class="font-semibold text-slate-800 text-xs">${sub.name}</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">${sub.note}</div>
+          </div>
+          <div class="font-bold text-slate-700 text-xs">${sub.amount}</div>
+        `;
+        subList.appendChild(row);
+      });
+    }
+
+    function selectCategory(id) {
+      selectedId = id;
+      const item = budgetData.find(d => d.id === id);
+      renderDonut();
+      renderCategoryButtons();
+      updateDetail(item);
+    }
+
+    // 預設開啟時突顯「治裝與美妝保養」
+    selectCategory('clothing');
+  </script>
+
+</body>
+</html>
